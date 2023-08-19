@@ -1,0 +1,10 @@
+{
+  "id": 2,
+  "name": "Name",
+  "antennaType": "Type",
+  "antennaHeight": 100.0,
+  "startTime": "13:30",
+  "endTime": "14:30",
+  "notes": "this is the notes",
+  "images": "image1,image2"
+}
