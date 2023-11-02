@@ -84,6 +84,10 @@ class PointDataModel extends PointData {
   }
 
   factory PointDataModel.fromJson(Map<String, dynamic> json) {
+    List<String> images = [];
+    if (json['images'] != '') {
+      images = json['images'].split(',');
+    }
     return PointDataModel(
       id: json['id'],
       name: json['name'],
@@ -92,7 +96,7 @@ class PointDataModel extends PointData {
       startTime: json['startTime'],
       endTime: json['endTime'],
       notes: json['notes'],
-      images: json['images'].split(','),
+      images: images,
     );
   }
 }

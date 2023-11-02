@@ -36,18 +36,20 @@ class PointDataBloc extends Bloc<PointDataEvent, PointDataState> {
           },
         );
       } else if (event is EditPointEvent) {
-        List<PointData> points = (state as PointDataLoaded).pointDataList;
+        List<PointData> points = [];
+        points = (state as PointDataLoaded).pointDataList;
         emit(PointDataLoading());
-        var result = await editPointUseCase(event.point as PointDataModel);
+        var result =
+            await editPointUseCase(PointDataModel.fromEntity(event.point));
         result.fold(
           (failure) => emit(PointDataLoaded(points)),
-          (point) => emit(
-            PointDataLoaded(
-              points
-                ..removeWhere((element) => element.id == point.id)
-                ..add(point),
-            ),
-          ),
+          (point) {
+            points.removeWhere((element) => element.id == point.id);
+            points.add(point);
+            emit(
+              PointDataLoaded(points),
+            );
+          },
         );
       } else if (event is DeletePointEvent) {
         List<PointData> points = (state as PointDataLoaded).pointDataList;
@@ -64,7 +66,6 @@ class PointDataBloc extends Bloc<PointDataEvent, PointDataState> {
       } else if (event is GetPointsEvent) {
         emit(PointDataLoading());
         var result = await getPointsUseCase();
-        print(result);
         result.fold(
           (failure) => emit(PointDataLoaded(const [])),
           (points) => emit(PointDataLoaded(points)),

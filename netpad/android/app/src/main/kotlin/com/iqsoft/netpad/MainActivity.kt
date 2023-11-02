@@ -1,4 +1,4 @@
-package com.example.netpad
+package com.iqsoft.netpad
 
 import io.flutter.embedding.android.FlutterActivity
 

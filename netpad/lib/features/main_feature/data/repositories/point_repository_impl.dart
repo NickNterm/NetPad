@@ -29,7 +29,6 @@ class PointRepositoryImpl extends PointRepository {
       await localDataSource.editProject(ProjectModel.fromEntity(project));
       return Right(result);
     } catch (e) {
-      print(e);
       return Left(SQLiteFailure());
     }
   }
@@ -53,7 +52,9 @@ class PointRepositoryImpl extends PointRepository {
   @override
   Future<Either<Failure, PointDataModel>> editPoint(PointData point) async {
     try {
-      var result = await localDataSource.editPoint(point as PointDataModel);
+      var result = await localDataSource.editPoint(
+        PointDataModel.fromEntity(point),
+      );
       return Right(result);
     } catch (e) {
       return Left(SQLiteFailure());
@@ -66,7 +67,6 @@ class PointRepositoryImpl extends PointRepository {
       var result = await localDataSource.getPoints();
       return Right(result);
     } catch (e) {
-      print(e);
       return Left(SQLiteFailure());
     }
   }

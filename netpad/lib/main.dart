@@ -5,6 +5,7 @@ import 'package:netpad/features/main_feature/presentation/bloc/point_data/point_
 import 'package:netpad/features/main_feature/presentation/bloc/project/project_bloc.dart';
 import 'package:netpad/features/main_feature/presentation/pages/project_page.dart';
 import 'package:netpad/injection/dependency_injection.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,8 +24,10 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => sl<ProjectBloc>()),
       ],
       child: MaterialApp(
-        title: 'Flutter Demo',
+        debugShowCheckedModeBanner: false,
+        title: 'NetPad',
         theme: ThemeData(
+          fontFamily: GoogleFonts.ubuntu().fontFamily,
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.cyan),
           primarySwatch: Colors.cyan,
           appBarTheme: const AppBarTheme(
@@ -32,6 +35,9 @@ class MyApp extends StatelessWidget {
             centerTitle: true,
             foregroundColor: Colors.white,
             backgroundColor: Colors.cyan,
+          ),
+          floatingActionButtonTheme: FloatingActionButtonThemeData(
+            foregroundColor: Colors.cyan.shade800,
           ),
           dialogTheme: const DialogTheme(
             elevation: 0,

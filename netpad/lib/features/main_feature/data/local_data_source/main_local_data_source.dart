@@ -105,7 +105,6 @@ class MainLocalDataSourceImpl extends MainLocalDataSource {
       kPointsTable,
     );
     for (var element in result) {
-      print(element);
       points.add(PointDataModel.fromJson(element));
     }
     return points;

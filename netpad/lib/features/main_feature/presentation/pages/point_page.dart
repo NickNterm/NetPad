@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -8,6 +8,7 @@ import 'package:netpad/features/main_feature/domain/entities/project.dart';
 import 'package:netpad/features/main_feature/presentation/bloc/point_data/point_data_bloc.dart';
 import 'package:netpad/features/main_feature/presentation/components/divider/custom_divider.dart';
 import 'package:netpad/injection/dependency_injection.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class PointPage extends StatefulWidget {
@@ -34,12 +35,34 @@ class _PointPageState extends State<PointPage> {
 
   final picker = ImagePicker();
 
+  late StreamSubscription listener;
+
+  @override
+  initState() {
+    super.initState();
+    if (widget.pointData != null) {
+      nameController.text = widget.pointData!.name;
+      antennaTypeController.text = widget.pointData!.antennaType;
+      antennaHeightController.text = widget.pointData!.antennaHeight.toString();
+      startTimeController.text = widget.pointData!.startTime;
+      endTimeController.text = widget.pointData!.endTime;
+      notesController.text = widget.pointData!.notes;
+      images.addAll(widget.pointData!.images);
+    }
+  }
+
   Future getImageFromGallery() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
+    final dir = await getApplicationDocumentsDirectory();
+    String path = dir.path;
+
     setState(() {
       if (pickedFile != null) {
-        images.add(base64Encode(File(pickedFile.path).readAsBytesSync()));
+        String fullPath =
+            '$path/pointImage_${DateTime.now().millisecondsSinceEpoch}.${pickedFile.path.split('.').last}';
+        pickedFile.saveTo(fullPath);
+        images.add(fullPath);
       }
     });
   }
@@ -47,9 +70,15 @@ class _PointPageState extends State<PointPage> {
   Future getImageFromCamera() async {
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
 
+    final dir = await getApplicationDocumentsDirectory();
+    String path = dir.path;
+
     setState(() {
       if (pickedFile != null) {
-        images.add(base64Encode(File(pickedFile.path).readAsBytesSync()));
+        String fullPath =
+            '$path/pointImage_${DateTime.now().millisecondsSinceEpoch}.${pickedFile.path.split('.').last}';
+        pickedFile.saveTo(fullPath);
+        images.add(fullPath);
       }
     });
   }
@@ -65,7 +94,27 @@ class _PointPageState extends State<PointPage> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('New Point'),
+        actions: [
+          Visibility(
+            visible: widget.pointData != null,
+            child: IconButton(
+              iconSize: 27,
+              icon: const Icon(
+                Icons.delete_rounded,
+              ),
+              onPressed: () {
+                sl<PointDataBloc>().add(
+                  DeletePointEvent(
+                    widget.pointData!.id,
+                    widget.project,
+                  ),
+                );
+                Navigator.pop(context);
+              },
+            ),
+          ),
+        ],
+        title: Text(widget.pointData == null ? 'New Point' : "Edit Point"),
       ),
       body: Stack(
         fit: StackFit.expand,
@@ -227,8 +276,8 @@ class _PointPageState extends State<PointPage> {
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
-                                child: Image.memory(
-                                  base64Decode(images[index]),
+                                child: Image.file(
+                                  File(images[index]),
                                   fit: BoxFit.cover,
                                 ),
                               ),
@@ -311,29 +360,46 @@ class _PointPageState extends State<PointPage> {
                     );
                     return;
                   }
-                  sl<PointDataBloc>().stream.listen(
+                  listener = sl<PointDataBloc>().stream.listen(
                     (state) {
-                      print(state);
                       if (state is PointDataLoaded) {
+                        listener.cancel();
                         Navigator.pop(context);
                       }
                     },
                   );
-                  sl<PointDataBloc>().add(
-                    CreatePointEvent(
-                      PointData(
-                        id: 0,
-                        name: nameController.text,
-                        antennaType: antennaTypeController.text,
-                        startTime: startTimeController.text,
-                        endTime: endTimeController.text,
-                        images: images,
-                        notes: notesController.text,
-                        antennaHeight: height,
+                  if (widget.pointData != null) {
+                    sl<PointDataBloc>().add(
+                      EditPointEvent(
+                        PointData(
+                          id: widget.pointData!.id,
+                          name: nameController.text,
+                          antennaType: antennaTypeController.text,
+                          startTime: startTimeController.text,
+                          endTime: endTimeController.text,
+                          images: images,
+                          notes: notesController.text,
+                          antennaHeight: height,
+                        ),
                       ),
-                      widget.project,
-                    ),
-                  );
+                    );
+                  } else {
+                    sl<PointDataBloc>().add(
+                      CreatePointEvent(
+                        PointData(
+                          id: 0,
+                          name: nameController.text,
+                          antennaType: antennaTypeController.text,
+                          startTime: startTimeController.text,
+                          endTime: endTimeController.text,
+                          images: images,
+                          notes: notesController.text,
+                          antennaHeight: height,
+                        ),
+                        widget.project,
+                      ),
+                    );
+                  }
                 }
               },
               child: Container(

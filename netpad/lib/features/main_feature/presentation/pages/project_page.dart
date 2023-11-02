@@ -14,27 +14,71 @@ class ProjectsPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('NetPad'),
       ),
-      body: BlocBuilder<ProjectBloc, ProjectState>(
-        builder: (context, state) {
-          if (state is ProjectLoaded) {
-            if (state.projects.isEmpty) {
-              return const Center(
-                child: Text('No projects'),
-              );
-            }
-            return ListView.builder(
-              itemCount: state.projects.length,
-              itemBuilder: (context, index) {
-                Project project = state.projects[index];
-                return ProjectListItem(project: project);
-              },
-            );
-          } else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-        },
+      body: Stack(
+        children: [
+          BlocBuilder<ProjectBloc, ProjectState>(
+            builder: (context, state) {
+              if (state is ProjectLoaded) {
+                if (state.projects.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline_rounded,
+                          size: 64,
+                          color: Colors.grey.shade400,
+                        ),
+                        const Text(
+                          'No projects',
+                          style: TextStyle(
+                            fontSize: 24,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  itemCount: state.projects.length,
+                  itemBuilder: (context, index) {
+                    Project project = state.projects[index];
+                    return ProjectListItem(project: project);
+                  },
+                );
+              } else {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+            },
+          ),
+          Positioned(
+            bottom: 10,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  "Powered by ",
+                  style: TextStyle(
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  "IQsoft",
+                  style: TextStyle(
+                    color: Colors.cyan.shade300,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -45,7 +89,7 @@ class ProjectsPage extends StatelessWidget {
             },
           );
         },
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add_rounded),
       ),
     );
   }

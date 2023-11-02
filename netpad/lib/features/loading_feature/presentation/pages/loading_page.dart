@@ -16,29 +16,38 @@ class _LoadingPageState extends State<LoadingPage> {
   late StreamSubscription projectListener;
   late StreamSubscription pointListener;
   int loadedStuff = 0;
+  double opacity = 0;
+
   @override
   void initState() {
     super.initState();
-    pointListener = sl<PointDataBloc>().stream.listen((state) {
-      if (state is PointDataLoaded) {
-        print("point loaded");
-        loadedStuff++;
-        if (loadedStuff == 2) {
-          Navigator.pushReplacementNamed(context, '/projects');
-        }
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        setState(() {
+          opacity = 1;
+        });
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          pointListener = sl<PointDataBloc>().stream.listen((state) {
+            if (state is PointDataLoaded) {
+              loadedStuff++;
+              if (loadedStuff == 2) {
+                Navigator.pushReplacementNamed(context, '/projects');
+              }
+            }
+          });
+          projectListener = sl<ProjectBloc>().stream.listen((state) {
+            if (state is ProjectLoaded) {
+              loadedStuff++;
+              if (loadedStuff == 2) {
+                Navigator.pushReplacementNamed(context, '/projects');
+              }
+            }
+          });
+          sl<ProjectBloc>().add(GetProjectsEvent());
+          sl<PointDataBloc>().add(GetPointsEvent());
+        });
+      });
     });
-    projectListener = sl<ProjectBloc>().stream.listen((state) {
-      if (state is ProjectLoaded) {
-        print("project loaded");
-        loadedStuff++;
-        if (loadedStuff == 2) {
-          Navigator.pushReplacementNamed(context, '/projects');
-        }
-      }
-    });
-    sl<ProjectBloc>().add(GetProjectsEvent());
-    sl<PointDataBloc>().add(GetPointsEvent());
   }
 
   @override
@@ -50,9 +59,29 @@ class _LoadingPageState extends State<LoadingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
-        child: Text("Loading"),
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 500),
+          opacity: opacity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/icon/icon.png',
+                width: 150,
+                height: 150,
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "NetPad",
+                style: TextStyle(
+                  fontSize: 24,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
