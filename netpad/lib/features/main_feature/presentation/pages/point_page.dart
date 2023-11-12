@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:netpad/features/main_feature/domain/entities/point_data.dart';
 import 'package:netpad/features/main_feature/domain/entities/project.dart';
 import 'package:netpad/features/main_feature/presentation/bloc/point_data/point_data_bloc.dart';
@@ -144,12 +145,28 @@ class _PointPageState extends State<PointPage> {
                   label: 'Start Time',
                   keyboardType: TextInputType.datetime,
                   icon: Icons.hourglass_top_rounded,
+                  buttonText: 'Set Now',
+                  onButtonPressed: () {
+                    setState(() {
+                      DateFormat dateFormat = DateFormat('HH:mm dd/MM/yyyy');
+                      String text = dateFormat.format(DateTime.now());
+                      startTimeController.text = text;
+                    });
+                  },
                 ),
                 EntryWidget(
                   controller: endTimeController,
                   label: 'End Time',
                   keyboardType: TextInputType.datetime,
                   icon: Icons.hourglass_bottom_rounded,
+                  buttonText: 'Set Now',
+                  onButtonPressed: () {
+                    setState(() {
+                      DateFormat dateFormat = DateFormat('HH:mm dd/MM/yyyy');
+                      String text = dateFormat.format(DateTime.now());
+                      endTimeController.text = text;
+                    });
+                  },
                 ),
                 EntryWidget(
                   controller: notesController,
@@ -186,66 +203,63 @@ class _PointPageState extends State<PointPage> {
                                 enableDrag: false,
                                 onClosing: () {},
                                 builder: (BuildContext context) {
-                                  return Container(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const SizedBox(height: 15),
-                                        Container(
-                                          width: 50,
-                                          height: 5,
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey[300],
-                                            borderRadius:
-                                                BorderRadius.circular(10),
+                                  return Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const SizedBox(height: 15),
+                                      Container(
+                                        width: 50,
+                                        height: 5,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[300],
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 15),
+                                      ListTile(
+                                        leading: const Icon(
+                                          Icons.camera_alt_rounded,
+                                          size: 30,
+                                        ),
+                                        title: const Text(
+                                          'Camera',
+                                          style: TextStyle(
+                                            fontSize: 20,
                                           ),
                                         ),
-                                        const SizedBox(height: 15),
-                                        ListTile(
-                                          leading: const Icon(
-                                            Icons.camera_alt_rounded,
-                                            size: 30,
-                                          ),
-                                          title: const Text(
-                                            'Camera',
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                            ),
-                                          ),
-                                          onTap: () async {
-                                            Navigator.pop(context);
-                                            final status = await Permission
-                                                .camera
-                                                .request();
-                                            if (status.isGranted) {
-                                              getImageFromCamera();
-                                            }
-                                          },
+                                        onTap: () async {
+                                          Navigator.pop(context);
+                                          final status =
+                                              await Permission.camera.request();
+                                          if (status.isGranted) {
+                                            getImageFromCamera();
+                                          }
+                                        },
+                                      ),
+                                      ListTile(
+                                        leading: const Icon(
+                                          Icons.photo_rounded,
+                                          size: 30,
                                         ),
-                                        ListTile(
-                                          leading: const Icon(
-                                            Icons.photo_rounded,
-                                            size: 30,
+                                        title: const Text(
+                                          'Gallery',
+                                          style: TextStyle(
+                                            fontSize: 20,
                                           ),
-                                          title: const Text(
-                                            'Gallery',
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                            ),
-                                          ),
-                                          onTap: () async {
-                                            Navigator.pop(context);
-                                            final status = await Permission
-                                                .storage
-                                                .request();
-                                            if (status.isGranted) {
-                                              getImageFromGallery();
-                                            }
-                                          },
                                         ),
-                                        const SizedBox(height: 15),
-                                      ],
-                                    ),
+                                        onTap: () async {
+                                          Navigator.pop(context);
+                                          final status = await Permission
+                                              .storage
+                                              .request();
+                                          if (status.isGranted) {
+                                            getImageFromGallery();
+                                          }
+                                        },
+                                      ),
+                                      const SizedBox(height: 15),
+                                    ],
                                   );
                                 },
                               ),
@@ -432,6 +446,8 @@ class EntryWidget extends StatelessWidget {
     required this.controller,
     required this.icon,
     required this.label,
+    this.buttonText,
+    this.onButtonPressed,
     this.keyboardType = TextInputType.text,
   });
   final TextEditingController controller;
@@ -439,23 +455,53 @@ class EntryWidget extends StatelessWidget {
   final IconData icon;
   final String label;
 
+  final Function()? onButtonPressed;
+  final String? buttonText;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
-        child: TextField(
-          controller: controller,
-          minLines: 1,
-          maxLines: 10,
-          keyboardType: keyboardType,
-          decoration: InputDecoration(
-            fillColor: Colors.grey[200],
-            labelText: label,
-            filled: true,
-            border: InputBorder.none,
-            prefixIcon: Icon(icon),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  minLines: 1,
+                  maxLines: 10,
+                  keyboardType: keyboardType,
+                  decoration: InputDecoration(
+                    fillColor: Colors.grey[200],
+                    labelText: label,
+                    filled: true,
+                    border: InputBorder.none,
+                    prefixIcon: Icon(icon),
+                  ),
+                ),
+              ),
+              Visibility(
+                visible: buttonText != null,
+                child: GestureDetector(
+                  onTap: onButtonPressed,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Text(
+                      buttonText ?? '',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.cyan,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

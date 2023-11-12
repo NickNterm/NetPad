@@ -195,6 +195,9 @@ class _EditProjectPageState extends State<EditProjectPage> {
                   );
                 }
                 return ListView.builder(
+                  itemCount: pointDataList.length,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) => GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -272,8 +275,6 @@ class _EditProjectPageState extends State<EditProjectPage> {
                       ),
                     ),
                   ),
-                  itemCount: pointDataList.length,
-                  shrinkWrap: true,
                 );
               } else {
                 return const CircularProgressIndicator();
