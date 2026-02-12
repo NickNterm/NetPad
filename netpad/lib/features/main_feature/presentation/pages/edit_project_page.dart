@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netpad/features/main_feature/data/models/project_model.dart';
 import 'package:netpad/features/main_feature/domain/entities/point_data.dart';
 import 'package:netpad/features/main_feature/domain/entities/project.dart';
+import 'package:netpad/features/main_feature/domain/use_cases/generate_project_pdf_use_case.dart';
 import 'package:netpad/features/main_feature/presentation/bloc/point_data/point_data_bloc.dart';
 import 'package:netpad/features/main_feature/presentation/bloc/project/project_bloc.dart';
 import 'package:netpad/features/main_feature/presentation/components/divider/custom_divider.dart';
@@ -96,8 +97,8 @@ class _EditProjectPageState extends State<EditProjectPage> {
                 ),
               );
 
-              final result = await sl
-                  .get<GenerateProjectPDFUseCase>()(project.id); // use case call
+              final result = await sl.get<GenerateProjectPDFUseCase>()(
+                  project.id); // use case call
 
               Navigator.pop(context); // close progress dialog
 
@@ -121,8 +122,8 @@ class _EditProjectPageState extends State<EditProjectPage> {
                   if (!success) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content:
-                            const Text('Could not generate PDF for this project'),
+                        content: const Text(
+                            'Could not generate PDF for this project'),
                         behavior: SnackBarBehavior.floating,
                         margin: const EdgeInsets.symmetric(
                           horizontal: 16,
