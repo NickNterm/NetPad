@@ -6,11 +6,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:netpad/features/main_feature/data/models/project_model.dart';
 import 'package:netpad/features/main_feature/domain/entities/point_data.dart';
 import 'package:netpad/features/main_feature/domain/entities/project.dart';
+import 'package:netpad/features/main_feature/domain/use_cases/generate_project_pdf_use_case.dart';
 import 'package:netpad/features/main_feature/presentation/bloc/point_data/point_data_bloc.dart';
 import 'package:netpad/features/main_feature/presentation/bloc/project/project_bloc.dart';
 import 'package:netpad/features/main_feature/presentation/components/divider/custom_divider.dart';
 import 'package:netpad/features/main_feature/presentation/pages/point_page.dart';
 import 'package:netpad/injection/dependency_injection.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
 
 class EditProjectPage extends StatefulWidget {
   const EditProjectPage({
@@ -64,6 +67,99 @@ class _EditProjectPageState extends State<EditProjectPage> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
+          IconButton(
+            iconSize: 27,
+            icon: const Icon(
+              Icons.picture_as_pdf_rounded,
+            ),
+            tooltip: 'Generate PDF',
+            onPressed: () async {
+              if (project.points.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Project has no points to export'),
+                    behavior: SnackBarBehavior.floating,
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                );
+                return;
+              }
+
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+
+              final result = await sl.get<GenerateProjectPDFUseCase>()(
+                  project.id); // use case call
+
+              Navigator.pop(context); // close progress dialog
+
+              await result.fold(
+                (failure) async {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Failed to generate PDF'),
+                      behavior: SnackBarBehavior.floating,
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  );
+                },
+                (success) async {
+                  if (!success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text(
+                            'Could not generate PDF for this project'),
+                        behavior: SnackBarBehavior.floating,
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    );
+                    return;
+                  }
+
+                  // Same path as used in MainLocalDataSourceImpl.generateProjectPDF
+                  final dir = await getApplicationDocumentsDirectory();
+                  final filePath = '${dir.path}/project_${project.id}.pdf';
+
+                  await OpenFilex.open(filePath);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('PDF generated'),
+                      behavior: SnackBarBehavior.floating,
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
           IconButton(
             iconSize: 27,
             icon: const Icon(
