@@ -39,9 +39,6 @@ class MyApp extends StatelessWidget {
           floatingActionButtonTheme: FloatingActionButtonThemeData(
             foregroundColor: Colors.cyan.shade800,
           ),
-          dialogTheme: const DialogTheme(
-            elevation: 0,
-          ),
           useMaterial3: true,
         ),
         home: const LoadingPage(),
